@@ -101,4 +101,4 @@ echo -e "\nFinished $SCRIPT_NAME at `date`"
 
 echo "Rebooting in 30 seconds...."
 sleep 30
-#shutdown -ry now
+shutdown -ry now
