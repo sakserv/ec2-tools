@@ -53,11 +53,6 @@ echo -e "\n#####  Setting up EPEL yum repo"
 (cd $work_dir && wget -N http://download.fedoraproject.org/pub/epel/6/x86_64/epel-release-6-8.noarch.rpm) || exit 1
 sudo rpm -ivh $work_dir/epel-release-6-8.noarch.rpm
 
-# Install git
-echo -e "\n#####  Installing git"
-sudo yum install -y git || exit 1
-echo "SUCCESS"
-
 # Install pip
 echo -e "\n#####  Installing pip"
 sudo yum install -y python-pip || exit 1
@@ -89,8 +84,21 @@ sudo chkconfig iptables off || exit 1
 sudo chkconfig ip6tables off || exit 1
 echo "SUCCESS"
 
+# create hosts entries
+echo -e "\n#####  Running create_hosts_file script"
+$SRC_DIR/create_hosts_file || exit 1
+echo "SUCCESS"
+
+# enable NTP
+echo -e "\n#####  Installing and enabling NTP"
+sudo yum install -y ntp || exit 1
+sudo chkconfig ntpd on || exit 1
+sudo /etc/init.d/ntpd start || exit 1
+echo "SUCCESS"
+
+
 echo -e "\nFinished $SCRIPT_NAME at `date`"
 
 echo "Rebooting in 30 seconds...."
 sleep 30
-shutdown -ry now
+#shutdown -ry now

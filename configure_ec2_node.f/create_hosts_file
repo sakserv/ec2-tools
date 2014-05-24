@@ -1,0 +1,59 @@
+#!/bin/bash
+###################################################
+#
+#  Name: create_hosts_file
+#  Purpose: Create a hosts file from all nodes in EC2
+#  Author: Shane Kumpf
+#
+###################################################
+
+#
+# Base variables
+#
+SCRIPT_NAME=`basename $0`
+SCRIPT_DIR=`cd $(dirname $0) && pwd`
+SRC_DIR=$SCRIPT_DIR/${SCRIPT_NAME}.f
+
+#
+# Functions
+#
+function usage
+{
+    echo "Usage: $SCRIPT_NAME"
+    exit 1
+}
+
+#
+# Validation
+#
+if [ `id -un` != "ec2-user" ]; then
+    echo "ERROR: Must run as ec2-user"
+    exit 1
+fi
+
+#
+# Main
+#
+
+# Get all hosts in this region
+count=0
+ec2-host-int | while read name intname; do
+
+    # Get the internal IP
+    intip=`host $intname | awk '{print $NF}'`
+
+    # If the node isn't already in /etc/hosts, add it
+    if ! grep -q $name /etc/hosts; then
+        echo "Adding the following entry to /etc/hosts"
+        echo -e "$intip\t${name}.hadoop $name" | sudo tee -a /etc/hosts
+        count=$(( count + 1 ))
+    fi
+
+done
+
+if [ $count -eq 0 ]; then
+    echo -e "All nodes previously added"
+fi
+cat /etc/hosts
+
+exit 0

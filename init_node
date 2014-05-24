@@ -1,0 +1,56 @@
+#!/bin/bash
+###################################################
+#
+#  Name: configure_ec2_node
+#  Purpose: Sets up base config and utils for ec2 nodes
+#  Author: Shane Kumpf
+#
+###################################################
+
+#
+# Base variables
+#
+SCRIPT_NAME=`basename $0`
+SCRIPT_DIR=`cd $(dirname $0) && pwd`
+SRC_DIR=$SCRIPT_DIR/${SCRIPT_NAME}.f
+
+#
+# Varibles
+#
+work_dir="/tmp/work"
+
+#
+# Functions
+#
+function usage
+{
+    echo "Usage: $SCRIPT_NAME"
+    exit 1
+}
+
+#
+# Validation
+#
+if [ `id -un` != "ec2-user" ]; then
+    echo "ERROR: Must run as ec2-user"
+    exit 1
+fi
+
+#
+# Main
+#
+echo -e "\nStarting $SCRIPT_NAME at `date`"
+
+# Setup the work dir
+if [ ! -d "$work_dir" ]; then
+    echo -e "\n#####  Creating work directory $work_dir"
+    mkdir -p $work_dir || exit 1
+    echo "SUCCESS"
+fi
+
+echo -e "\n#####  Cloning ec2-tools repo"
+(cd $work_dir && git clone https://github.com/sakserv/ec2-tools) || exit 1
+echo "SUCCESS"
+
+echo -e "\n#####  Running configure_ec2_node"
+$work_dir/ec2-tools/configure_ec2_node || exit 1
