@@ -41,19 +41,13 @@ fi
 #
 echo -e "\nStarting $SCRIPT_NAME at `date`"
 
-# Clean up prev work dir
-if [ -d "$work_dir" ]; then
-    echo -e "\n#####  Cleaning up previous work directory $work_dir"
-    rm -rf $work_dir || exit 1
-    echo "SUCCESS"
-fi
-
 # Create new work dir
 if [ ! -d "$work_dir" ]; then
     echo -e "\n#####  Creating work directory $work_dir"
     mkdir -p $work_dir || exit 1
     echo "SUCCESS"
 fi
+
 
 # Setup the EPEL repo
 echo -e "\n#####  Setting up EPEL yum repo"
