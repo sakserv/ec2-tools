@@ -21,7 +21,6 @@ global_umask="0022"
 umask_file="/etc/profile.d/set_umask.sh"
 git_ec2oop_url="https://github.com/sakserv/ec2oop.git"
 
-
 #
 # Functions
 #
@@ -117,8 +116,8 @@ echo "SUCCESS"
 
 # git clone ec2oop into work dir
 # pull down ec2oop repo on remote node
-echo -e "\n#####  Pulling repo $git_ec2oop_url on $node"
-ec2-ssh $node "cd $work_dir && git clone $git_ec2oop_url" || exit 1
+echo -e "\n#####  Pulling repo $git_ec2oop_url to $work_dir"
+cd $work_dir && git clone $git_ec2oop_url || exit 1
 echo "SUCCESS"
 
 echo -e "\nFinished $SCRIPT_NAME at `date`"
