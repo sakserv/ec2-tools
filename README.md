@@ -5,8 +5,9 @@ Tools for working with ec2 nodes
 
 Prerequisites
 -------------
-1. Passphraseless ssh-key, default ~/.ssh/id_rsa (because if a user knows nothing of ssh, this is the default)
-2. Install git
+1. RHEL/CentOS 6.3 or later
+2. Passphraseless ssh-key, default ~/.ssh/id_rsa (because if a user knows nothing of ssh, this is the default)
+2. Git installed
 3. Use the "Name" tag on the EC2 instance to set the hostname of the node
 
 Bootstrap the node
