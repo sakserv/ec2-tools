@@ -16,6 +16,7 @@ For a list of instances, run ec2-host without any paramteres
   -r, REGION    Amazon EC2 Region, defaults to us-east-1
   -t, TAG       Tag name for searching, defaults to 'Name'
   -i, SSH_KEY   ssh key to use, defaults to ~/.ssh/id_rsa
+  -n, SSH_KEY   use -n instead of -t for ssh
 EOF
 }
 
@@ -25,7 +26,7 @@ test $# -eq 0 && { usage; exit; }
 # Process options
 ssh_key=~/.ssh/id_rsa
 cmd="ec2-host"
-while getopts ":hk:s:r:t:i:" opt; do
+while getopts ":hk:s:r:t:i:n" opt; do
     case $opt in
         h  ) usage; exit 1;;
         k  ) cmd="$cmd -k $OPTARG";;
@@ -33,6 +34,7 @@ while getopts ":hk:s:r:t:i:" opt; do
         r  ) cmd="$cmd -r $OPTARG";;
         t  ) cmd="$cmd -t $OPTARG";;
         i  ) ssh_key="$OPTARG";;
+        n  ) ssh_n="true";;
         \? ) usage; exit 1
     esac
 done
@@ -40,9 +42,17 @@ shift $((OPTIND - 1))
 
 # Set ssh args
 if [ -n "$ssh_key" ]; then
-    ssh_args="-o StrictHostKeyChecking=no -i $ssh_key -t -q"
+    if [ -n "$ssh_n" ]; then
+        ssh_args="-o StrictHostKeyChecking=no -i $ssh_key -n -q"
+    else
+        ssh_args="-o StrictHostKeyChecking=no -i $ssh_key -t -q"
+    fi
 else
-    ssh_args="-o StrictHostKeyChecking=no -t -q"
+    if [ -n "$ssh_n" ]; then
+        ssh_args="-o StrictHostKeyChecking=no -n -q"
+    else
+        ssh_args="-o StrictHostKeyChecking=no -t -q"
+    fi
 fi
 
 # support user@instance-name format

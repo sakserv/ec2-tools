@@ -114,6 +114,13 @@ echo "umask $global_umask" | sudo tee $umask_file || exit 1
 sudo chmod 775 $umask_file || exit 1
 echo "SUCCESS"
 
+# Disble requiretty for sudo
+echo -e "\n#####  Disabling requiretty for sudo"
+sudo sed -i '/.*requiretty.*/g' /etc/sudoers
+echo "/etc/sudoers contents"
+sudo cat /etc/sudoers | grep -v -e ^# -e ^$
+echo "SUCCESS"
+
 # git clone ec2oop into work dir
 # pull down ec2oop repo on remote node
 echo -e "\n#####  Pulling repo $git_ec2oop_url to $work_dir"
