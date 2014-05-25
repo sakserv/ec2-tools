@@ -40,9 +40,9 @@ shift $((OPTIND - 1))
 
 # Set ssh args
 if [ -n "$ssh_key" ]; then
-    ssh_args="-o StrictHostKeyChecking=no -i $ssh_key -t"
+    ssh_args="-o StrictHostKeyChecking=no -i $ssh_key -t -q"
 else
-    ssh_args="-o StrictHostKeyChecking=no -t"
+    ssh_args="-o StrictHostKeyChecking=no -t -q"
 fi
 
 # support user@instance-name format
@@ -77,4 +77,4 @@ cmd="echo \\\". ~/.bashrc && PS1='\[\e]0;$inst: \w\\\a\]\[\\\033[01;32m\]$inst\[
 if test "${@:2}"; then
     cmd="${@:2}"
 fi
-test -n "$host" && echo "Connecting to $host." && exec sh -c "ssh $ssh_args $user@$host \"$cmd\""
+test -n "$host" && exec sh -c "ssh $ssh_args $user@$host \"$cmd\""
