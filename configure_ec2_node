@@ -12,7 +12,6 @@
 #
 SCRIPT_NAME=`basename $0`
 SCRIPT_DIR=`cd $(dirname $0) && pwd`
-SRC_DIR=$SCRIPT_DIR/${SCRIPT_NAME}.f
 
 #
 # Varibles
@@ -48,7 +47,6 @@ if [ ! -d "$work_dir" ]; then
     echo "SUCCESS"
 fi
 
-
 # Setup the EPEL repo
 echo -e "\n#####  Setting up EPEL yum repo"
 (cd $work_dir && wget -N http://download.fedoraproject.org/pub/epel/6/x86_64/epel-release-6-8.noarch.rpm) || exit 1
@@ -62,8 +60,8 @@ echo "SUCCESS"
 # Install EC2 SSH
 echo -e "\n#####  Installing ec2-ssh"
 sudo pip install ec2-ssh || exit 1
-sudo cp $SRC_DIR/ec2-ssh /usr/bin/ || exit 1 # Copy customized version
-sudo cp $SRC_DIR/ec2-host-int /usr/bin/ || exit 1 # Copy customized version
+sudo cp $SCRIPT_DIR/ec2-ssh /usr/bin/ || exit 1 # Copy customized version
+sudo cp $SCRIPT_DIR/ec2-host-int /usr/bin/ || exit 1 # Copy customized version
 echo "SUCCESS"
 
 # Set the new hostname using the tag from EC2
@@ -92,7 +90,7 @@ echo "SUCCESS"
 
 # create hosts entries
 echo -e "\n#####  Running create_hosts_file script"
-$SRC_DIR/create_hosts_file || exit 1
+$SCRIPT_DIR/create_hosts_file || exit 1
 echo "SUCCESS"
 
 # enable NTP
@@ -102,9 +100,9 @@ sudo chkconfig ntpd on || exit 1
 sudo /etc/init.d/ntpd start || exit 1
 echo "SUCCESS"
 
-
 echo -e "\nFinished $SCRIPT_NAME at `date`"
 
+# Reboot the node
 echo "Rebooting in 30 seconds...."
 sleep 30
 sudo shutdown -ry now
