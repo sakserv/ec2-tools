@@ -66,13 +66,18 @@ sudo cp $SCRIPT_DIR/ec2-ssh /usr/bin/ || exit 1 # Copy customized version
 sudo cp $SCRIPT_DIR/ec2-host-int /usr/bin/ || exit 1 # Copy customized version
 echo "SUCCESS"
 
-# Set the new hostname using the tag from EC2
-new_hostname=`ec2-host-int | grep $(hostname -f) | awk '{print $1}'`
+# Get the new hostname using the tag from EC2
+echo -e "\n#####  Getting new hostname from EC2 Name tag"
+new_hostname=`ec2-host-int | grep $(hostname) | awk '{print $1}'`
 if [ -z "$new_hostname" ]; then
     echo "ERROR: Unable to determine Name for node"
     echo "ERROR: Did you forget to get set the EC2 ENV variables?"
     exit 1
 fi
+echo "New hostname will be set to $new_hostname"
+echo "SUCCESS"
+
+# Set the new hostname using the tag from EC2
 echo -e "\n#####  Setting hostname to $new_hostname"
 sudo sed -i 's|HOSTNAME=.*|HOSTNAME='$new_hostname'|g' /etc/sysconfig/network || exit 1
 cat /etc/sysconfig/network
