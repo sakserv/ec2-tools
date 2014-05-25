@@ -17,6 +17,8 @@ SCRIPT_DIR=`cd $(dirname $0) && pwd`
 # Varibles
 #
 work_dir="/tmp/work"
+global_umask="0022"
+umask_file="/etc/profile.d/set_umask.sh"
 
 #
 # Functions
@@ -98,6 +100,12 @@ echo -e "\n#####  Installing and enabling NTP"
 sudo yum install -y ntp || exit 1
 sudo chkconfig ntpd on || exit 1
 sudo /etc/init.d/ntpd start || exit 1
+echo "SUCCESS"
+
+# Set umask
+echo -e "\n#####  Setting global umask to $global_umask"
+echo "umask $global_umask" | sudo tee $umask_file || exit 1
+sudo chmod 775 $umask_file || exit 1
 echo "SUCCESS"
 
 echo -e "\nFinished $SCRIPT_NAME at `date`"
