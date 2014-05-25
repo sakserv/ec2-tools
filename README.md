@@ -16,11 +16,8 @@ The bootstrap and initial configuration tool makes use of ec2-host (and you get 
 Set the env vars below:
 
 *export AWS_ACCESS_KEY_ID=""
-
 *export AWS_SECRET_ACCESS_KEY=""
-
 *export AWS_EC2_REGION=""
 
 Run the following to bootstrap the node
-
 `wget --delete-after -q -O - https://raw.githubusercontent.com/sakserv/ec2-tools/master/init_node | bash`
