@@ -110,12 +110,7 @@ def main(argv):
 
     numinstances = len(instances)
 
-    if numinstances == 1:
-        print instances[0][1]  # [1] = dns
-
-        sys.exit(0)
-        return
-    elif numinstances == 0 or numinstances > 1:
+    if numinstances == 0 or numinstances > 1:
         for pair in sorted(instances, key=lambda p: p[0]):
             print "%s\t%s" % pair
 
