@@ -123,7 +123,7 @@ echo "SUCCESS"
 
 # create hosts entries
 echo -e "\n#####  Running create_hosts_file script"
-$SCRIPT_DIR/create_hosts_file || exit 1
+$ec2_tools_dir/create_hosts_file || exit 1
 echo "SUCCESS"
 
 # enable NTP
