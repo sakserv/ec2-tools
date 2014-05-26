@@ -69,7 +69,7 @@ echo "SUCCESS"
 
 # Get the new hostname using the tag from EC2
 echo -e "\n#####  Getting new hostname from EC2 Name tag"
-new_hostname=`ec2-host-int | grep $(hostname) | awk '{print $1}'`
+new_hostname=`ec2-host-int | grep -w $(hostname) | awk '{print $1}'`
 if [ -z "$new_hostname" ]; then
     echo "ERROR: Unable to determine Name for node"
     echo "ERROR: Did you forget to get set the EC2 ENV variables?"
