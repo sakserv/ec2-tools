@@ -12,12 +12,16 @@
 #
 SCRIPT_NAME=`basename $0`
 SCRIPT_DIR=`cd $(dirname $0) && pwd`
-SRC_DIR=$SCRIPT_DIR/${SCRIPT_NAME}.f
 
 #
 # Varibles
 #
 work_dir="/tmp/work"
+global_umask="0022"
+umask_file="/etc/profile.d/set_umask.sh"
+maven_file="/etc/profile.d/maven.sh"
+git_ec2oop_url="https://github.com/sakserv/ec2oop.git"
+git_ec2_tools_url=" https://github.com/sakserv/ec2-tools"
 
 #
 # Functions
@@ -41,7 +45,6 @@ fi
 #
 echo -e "\nStarting $SCRIPT_NAME at `date`"
 
-# Clean up prev work dir
 if [ -d "$work_dir" ]; then
     echo -e "\n#####  Cleaning up previous work directory $work_dir"
     rm -rf $work_dir || exit 1
@@ -55,9 +58,96 @@ if [ ! -d "$work_dir" ]; then
     echo "SUCCESS"
 fi
 
+# git clone ec2-tools into work dir
 echo -e "\n#####  Cloning ec2-tools repo"
-(cd $work_dir && git clone https://github.com/sakserv/ec2-tools) || exit 1
+(cd $work_dir && git clone $git_ec2_tools_url) || exit 1
 echo "SUCCESS"
 
-echo -e "\n#####  Running configure_ec2_node"
-$work_dir/ec2-tools/configure_ec2_node || exit 1
+# git clone ec2oop into work dir
+echo -e "\n#####  Pulling repo $git_ec2oop_url to $work_dir"
+(cd $work_dir && git clone $git_ec2oop_url) || exit 1
+echo "SUCCESS"
+
+# Setup the EPEL repo
+echo -e "\n#####  Setting up EPEL yum repo"
+(cd $work_dir && wget -N http://download.fedoraproject.org/pub/epel/6/x86_64/epel-release-6-8.noarch.rpm) || exit 1
+sudo rpm -ivh $work_dir/epel-release-6-8.noarch.rpm
+
+# Install maven
+echo -e "\n#####  Installing maven"
+sudo mkdir -p /usr/lib/maven || exit 1
+(cd $work_dir && wget http://mirror.symnds.com/software/Apache/maven/maven-3/3.1.1/binaries/apache-maven-3.1.1-bin.tar.gz && tar -zxvf apache-maven*.tar.gz && sudo cp -R apache-maven-3.1.1/* /usr/lib/maven/) || exit 1
+echo 'export PATH=$PATH:/usr/lib/maven/bin' | sudo tee $maven_file
+
+# Install pip
+echo -e "\n#####  Installing pip"
+sudo yum install -y python-pip || exit 1
+echo "SUCCESS"
+
+# Install EC2 SSH
+echo -e "\n#####  Installing ec2-ssh"
+sudo pip install ec2-ssh || exit 1
+sudo cp $SCRIPT_DIR/ec2-ssh /usr/bin/ || exit 1 # Copy customized version
+sudo cp $SCRIPT_DIR/ec2-host-int /usr/bin/ || exit 1 # Copy customized version
+echo "SUCCESS"
+
+# Get the new hostname using the tag from EC2
+echo -e "\n#####  Getting new hostname from EC2 Name tag"
+new_hostname=`ec2-host-int | grep -w $(hostname) | awk '{print $1}'`
+if [ -z "$new_hostname" ]; then
+    echo "ERROR: Unable to determine Name for node"
+    echo "ERROR: Did you forget to get set the EC2 ENV variables?"
+    exit 1
+fi
+echo "New hostname will be set to $new_hostname"
+echo "SUCCESS"
+
+# Set the new hostname using the tag from EC2
+echo -e "\n#####  Setting hostname to $new_hostname"
+sudo sed -i 's|HOSTNAME=.*|HOSTNAME='$new_hostname'|g' /etc/sysconfig/network || exit 1
+cat /etc/sysconfig/network
+echo "SUCCESS"
+
+# disable selinux
+echo -e "\n#####  Disabling SELinux"
+sudo sed -i 's|SELINUX=.*|SELINUX=disabled|g' /etc/sysconfig/selinux || exit 1
+cat /etc/sysconfig/selinux
+echo "SUCCESS"
+
+# disable iptables
+echo -e "\n#####  Disabling IPTables"
+sudo chkconfig iptables off || exit 1
+sudo chkconfig ip6tables off || exit 1
+echo "SUCCESS"
+
+# create hosts entries
+echo -e "\n#####  Running create_hosts_file script"
+$SCRIPT_DIR/create_hosts_file || exit 1
+echo "SUCCESS"
+
+# enable NTP
+echo -e "\n#####  Installing and enabling NTP"
+sudo yum install -y ntp || exit 1
+sudo chkconfig ntpd on || exit 1
+sudo /etc/init.d/ntpd start || exit 1
+echo "SUCCESS"
+
+# Set umask
+echo -e "\n#####  Setting global umask to $global_umask"
+echo "umask $global_umask" | sudo tee $umask_file || exit 1
+sudo chmod 775 $umask_file || exit 1
+echo "SUCCESS"
+
+# Disble requiretty for sudo
+echo -e "\n#####  Disabling requiretty for sudo"
+sudo sed -i '/.*requiretty.*/g' /etc/sudoers
+echo "/etc/sudoers contents"
+sudo cat /etc/sudoers | grep -v -e ^# -e ^$
+echo "SUCCESS"
+
+echo -e "\nFinished $SCRIPT_NAME at `date`"
+
+# Reboot the node
+echo "Rebooting in 30 seconds...."
+sleep 30
+sudo shutdown -ry now
