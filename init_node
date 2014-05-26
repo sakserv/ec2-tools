@@ -22,6 +22,7 @@ umask_file="/etc/profile.d/set_umask.sh"
 maven_file="/etc/profile.d/maven.sh"
 git_ec2oop_url="https://github.com/sakserv/ec2oop.git"
 git_ec2_tools_url=" https://github.com/sakserv/ec2-tools"
+ec2_tools_dir="$work_dir/ec2-tools"
 
 #
 # Functions
@@ -87,8 +88,8 @@ echo "SUCCESS"
 # Install EC2 SSH
 echo -e "\n#####  Installing ec2-ssh"
 sudo pip install ec2-ssh || exit 1
-sudo cp $SCRIPT_DIR/ec2-ssh /usr/bin/ || exit 1 # Copy customized version
-sudo cp $SCRIPT_DIR/ec2-host-int /usr/bin/ || exit 1 # Copy customized version
+sudo cp $ec2_tools_dir/ec2-ssh /usr/bin/ || exit 1 # Copy customized version
+sudo cp $ec2_tools_dir/ec2-host-int /usr/bin/ || exit 1 # Copy customized version
 echo "SUCCESS"
 
 # Get the new hostname using the tag from EC2
